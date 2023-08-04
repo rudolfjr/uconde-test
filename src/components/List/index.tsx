@@ -22,13 +22,17 @@ export function List({ name, debit, code }: ListProps) {
     navigation.navigate("view", {code: code});
   }, []);
 
+  const onHandleOpen = useCallback(() => {
+    setOpen(open ? false : true);
+  }, []);
+
   return (
     <>
       <S.Container>
         <S.ListButton onPress={onHandleView}>
           <S.Title debit={debit}>{name}</S.Title>
         </S.ListButton>
-        <S.TrashButton onPress={() => setOpen(open ? false : true)}>
+        <S.TrashButton onPress={onHandleOpen}>
           <S.TrashIcon />
         </S.TrashButton>
       </S.Container>

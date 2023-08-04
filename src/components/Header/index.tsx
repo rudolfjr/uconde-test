@@ -20,10 +20,15 @@ export function Header({
   const onHandleAdd = useCallback(() => {
     navigation.navigate("add");
   }, []);
+
+  const onHandleBack = useCallback(() => {
+    navigation.goBack()
+  }, []);
+  
   return (
     <S.Container>
       {showBackButton && (
-        <S.BackButton onPress={() => navigation.goBack()}>
+        <S.BackButton onPress={onHandleBack}>
           <S.BackIcon />
         </S.BackButton>
       )}
