@@ -7,6 +7,9 @@ import { plansCreate } from "@storage/plans/plansCreate";
 import { useNavigation } from "@react-navigation/native";
 import { usePlans } from "@context/PlansContext";
 import useValidateSequence from "@hooks/useValidateSequence";
+import { PlanItemProps } from "@type/plans";
+import { useGetFather } from "@hooks/useGetFather";
+import { useFindPlan } from "@hooks/useFindPlan";
 
 export function InsertPlans() {
   const typeItens = [
@@ -29,6 +32,8 @@ export function InsertPlans() {
   const navigation = useNavigation();
   const { plans } = usePlans();
   const { error, validate } = useValidateSequence();
+  const { getFather } = useGetFather();
+  const { existPlan, validatePlan } = useFindPlan();
 
   const [father, setFather] = useState("Selecione");
   const [code, setCode] = useState("");
@@ -36,15 +41,21 @@ export function InsertPlans() {
   const [type, setType] = useState("");
   const [accept, setAccept] = useState("");
 
+  const [fatherItem, setFatherItem] = useState<PlanItemProps>();
+
   const handleNewPlan = async () => {
     if (!validate(code)) return false;
+
+    if (fatherItem?.accept === "Sim") return false;
+
+    if (validatePlan(code)) return false;
 
     try {
       const savePlan = {
         [code]: {
           code: code,
           name: name,
-          type: type,
+          type: fatherItem ? fatherItem.type : type,
           accept: accept,
           father: father === "Selecione" ? "" : father,
         },
@@ -92,6 +103,9 @@ export function InsertPlans() {
 
   useEffect(() => {
     setCode(suggestNextCode(father === "Selecione" ? "" : father));
+    if (getFather(father)) {
+      setFatherItem(getFather(father));
+    } 
   }, [father]);
 
   return (
@@ -104,37 +118,48 @@ export function InsertPlans() {
           title="Inserir Conta"
         />
         <GS.ContentContainer>
-          <SelectForm
-            setValue={setFather}
-            itens={plans}
-            title="Conta pai"
-            selected={father}
-          />
-          <InputForm
-            setValue={setCode}
-            value={code}
-            title="Código"
-            placeholder="x.x"
-          />
-          {error && <GS.Error>{error}</GS.Error>}
-          <InputForm
-            setValue={setName}
-            value={name}
-            title="Nome"
-            placeholder="Taxa condominial"
-          />
-          <SelectForm
-            setValue={setType}
-            itens={typeItens}
-            title="Tipo"
-            selected={type}
-          />
-          <SelectForm
-            setValue={setAccept}
-            title="Aceita lançamentos"
-            itens={aceptItens}
-            selected={accept}
-          />
+          {plans.length > 0 && (
+            <SelectForm
+              setValue={setFather}
+              itens={plans}
+              title="Conta pai"
+              selected={father}
+            />
+          )}
+          {!fatherItem || fatherItem?.accept === "Não" ? (
+            <>
+              <InputForm
+                setValue={setCode}
+                value={code}
+                title="Código"
+                placeholder="x.x"
+              />
+              {error && <GS.Error>{error}</GS.Error>}
+              {existPlan && <GS.Error>Este código já existe</GS.Error>}
+              <InputForm
+                setValue={setName}
+                value={name}
+                title="Nome"
+                placeholder="Taxa condominial"
+              />
+              {!fatherItem && (
+                <SelectForm
+                  setValue={setType}
+                  itens={typeItens}
+                  title="Tipo"
+                  selected={type}
+                />
+              )}
+              <SelectForm
+                setValue={setAccept}
+                title="Aceita lançamentos"
+                itens={aceptItens}
+                selected={accept}
+              />
+            </>
+          ) : (
+            <GS.Error>Esta conta não pode receber lançamentos</GS.Error>
+          )}
         </GS.ContentContainer>
       </GS.Container>
     </>

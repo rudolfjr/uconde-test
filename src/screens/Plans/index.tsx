@@ -59,7 +59,7 @@ export function Plans() {
             <>
               <S.HeaderList>
                 <S.Title>Listagem</S.Title>
-                <S.Subtitle>{plans.length} registros</S.Subtitle>
+                <S.Subtitle>{plans.length == 1 ? `1 registro` : `${plans.length} registros`}</S.Subtitle>
               </S.HeaderList>
 
               <FlatList
